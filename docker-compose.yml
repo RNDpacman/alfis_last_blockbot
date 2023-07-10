@@ -1,0 +1,46 @@
+version: "3.9"
+
+networks:
+  lb-net:
+    name: lb-net
+
+volumes:
+  alfis_data:
+    name: alfis_data
+  mongo_data:
+    name: mongo_data
+
+
+services:
+  alfis:
+    image: cofob/alfis
+    container_name: alfis
+    volumes:
+      - alfis_data:/storage
+    networks:
+      - lb-net
+    restart: unless-stopped
+    stop_grace_period: 10s
+
+  alfis_last_block:
+    image: alfis_last_block
+    container_name: alfis_last_block
+    volumes:
+      - alfis_data:/db
+    networks:
+      - lb-net
+    environment:
+      - MONGO_SRV=mongo
+      - BOT_API_TOKEN=${BOT_API_TOKEN}
+      - ALFIS_DB_PATH=/db
+      - SCHEDULE_SECONDS=70 #default 60
+#      - ALFIS_DB_FILE="blockchain.db"
+
+  mongo:
+    image: mongo
+    container_name: mongodb
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - lb-net
+
