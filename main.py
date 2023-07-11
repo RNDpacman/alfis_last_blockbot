@@ -30,23 +30,25 @@ async def send_welcome(message: types.Message, state: FSMContext):
         data['stub'] = "#"
 
     PREV_BLOCK = cur_block = get_last_block(DB_PATH)
-    logging.info(f'command: [start, get], user: {message.from_user.id}, last_block: {cur_block}')
+    logging.info(f'command: [start, get], user: {message.from_user.id}, chat_id: {message.chat.id}, last_block: {cur_block}')
     await message.reply(f'{TEXT_MSG}{cur_block}')
 
 
 async def schedule_last_block(bot: Bot):
-    for chat_id in get_chat_ids():
-        global PREV_BLOCK
-        cur_block = get_last_block(DB_PATH)
+    
+    global PREV_BLOCK
 
-        if cur_block != PREV_BLOCK:
-            PREV_BLOCK = cur_block
+    cur_block = get_last_block(DB_PATH)
+    if cur_block != PREV_BLOCK:
+        PREV_BLOCK = cur_block
+
+        for chat_id in get_chat_ids():
             await bot.send_message(text=f'{TEXT_MSG}{cur_block}', chat_id=chat_id)
-            logging.info(f'schedule: New block is: {cur_block}')
+            logging.info(f'schedule: Chat_ID: {chat_id}, New block is: {cur_block}')
 
-        else:
+    else:
 
-            logging.info('schedule: No new blocks')
+        logging.info('schedule: No new blocks')
 
 scheduler.add_job(schedule_last_block, "interval", seconds=SECONDS, args=(bot,))
 

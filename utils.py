@@ -23,3 +23,4 @@ def get_chat_ids():
     for chat_id in chats:
         yield chat_id['chat']
 
+
