@@ -1,4 +1,4 @@
-import logging
+#import logging
 import sqlite3
 import os
 
@@ -7,8 +7,8 @@ from aiogram import Bot, Dispatcher, executor, types
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram.contrib.fsm_storage.mongo import MongoStorage
 
-from utils import get_last_block, get_chat_ids
-from config import DB_PATH, SECONDS, DB_MONGO_NAME, DB_HOST, DB_PORT, TEXT_MSG, API_TOKEN
+from utils import get_last_block, get_chat_ids, save_chat_id
+from config import DB_PATH, SECONDS, TEXT_MSG, API_TOKEN
 
 PREV_BLOCK = ""
 
@@ -16,26 +16,23 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 
 bot = Bot(token=API_TOKEN)
 
-storage = MongoStorage(host=DB_HOST, port=DB_PORT, db_name=DB_MONGO_NAME)
-
-dp = Dispatcher(bot, storage=storage)
+dp = Dispatcher(bot)
 
 scheduler = AsyncIOScheduler()
 
 
 @dp.message_handler(commands=['start', 'get'])
-async def send_welcome(message: types.Message, state: FSMContext):
+async def send_welcome(message: types.Message):
     global PREV_BLOCK
-    async with state.proxy() as data:
-        data['stub'] = "#"
 
     PREV_BLOCK = cur_block = get_last_block(DB_PATH)
     logging.info(f'command: [start, get], user: {message.from_user.id}, chat_id: {message.chat.id}, last_block: {cur_block}')
+    save_chat_id(message.chat.id)
     await message.reply(f'{TEXT_MSG}{cur_block}')
 
 
 async def schedule_last_block(bot: Bot):
-    
+
     global PREV_BLOCK
 
     cur_block = get_last_block(DB_PATH)
