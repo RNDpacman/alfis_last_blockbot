@@ -20,9 +20,9 @@ services:
     restart: unless-stopped
     stop_grace_period: 10s
 
-  alfis_last_block:
-    image: alfis_last_block
-    container_name: alfis_last_block
+  alfisdnsbot:
+    image: alfisdnsbot
+    container_name: alfisdnsbot
     volumes:
       - alfis_data:/db
     networks:
