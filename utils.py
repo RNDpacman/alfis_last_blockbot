@@ -1,35 +1,23 @@
 import sqlite3
-import time
-#from pymongo import MongoClient
-#from config import REQUEST, DB_PORT, DB_HOST, DB_MONGO_NAME
-from config import REQUEST, DB_FILE, DB_TABLE, DB_COL
+from config import DB_FILE, DB_TABLE, DB_COL, DB_ALFIS_PATH, ALERT_TIME, TEXT_ALERT_MSG
 
-def get_last_block(db):
-    with sqlite3.connect(db) as conn:
+def get_last_block():
+    with sqlite3.connect(DB_ALFIS_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute(REQUEST)
-        return cursor.fetchall()[0][0]
+        cursor.execute("SELECT \"transaction\", timestamp, id FROM blocks ORDER BY id DESC LIMIT 1;")
+        return cursor.fetchone()
 
-def get_last_time_block(db):
-    with sqlite3.connect(db) as conn:
+
+def get_next_block(last_block: int):
+    with sqlite3.connect(DB_ALFIS_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute(REQ_TIME_LAST_BLOCK)
-        return cursor.fetchall()[0][0]
-
-#def get_chat_ids():
-#    '''
-#    Возвращает генератор id чатов с которыми бот работал
-#    '''
-#    client = MongoClient(f'mongodb://{DB_HOST}:{DB_PORT}/')
-#    db = client[DB_MONGO_NAME]
-#    collection = db['aiogram_data']
-#    chats = collection.find({})
-#    for chat_id in chats:
-#        yield chat_id['chat']
-
+        cursor.execute(f"SELECT timestamp, id FROM blocks WHERE id > {last_block} LIMIT 1")
+        return cursor.fetchone()
 
 def save_chat_id(chat_id: int):
-
+    '''
+    Save last block on the bd
+    '''
     with sqlite3.connect(DB_FILE) as conn:
 
         cursor = conn.cursor()
@@ -51,13 +39,5 @@ def get_chat_ids():
         cursor = conn.cursor()
         cursor.execute(f'SELECT {DB_COL} FROM {DB_TABLE}')
         for row in cursor.fetchall():
-            yield row
-
-def check_health(last_block, time_block):
-    delta_time = int(time.time()) - time_block
-
-    if last_block % 5 == 0 and delta_time > 600:
-        return false
-    else:
-        return true
+            yield row[0]
 
