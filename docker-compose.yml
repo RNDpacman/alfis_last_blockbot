@@ -8,7 +8,6 @@ volumes:
   alfis_data:
     name: alfis_data
 
-
 services:
   alfis:
     image: cofob/alfis
