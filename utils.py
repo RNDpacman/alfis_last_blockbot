@@ -1,34 +1,53 @@
 import sqlite3
-from config import DB_FILE, DB_TABLE, DB_COL, DB_ALFIS_PATH, ALERT_TIME, TEXT_ALERT_MSG
+from config import DB_FILE, DB_ALFIS_PATH, ALERT_TIME, TEXT_ALERT_MSG
+
 
 def get_last_block():
     with sqlite3.connect(DB_ALFIS_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT \"transaction\", timestamp, id FROM blocks ORDER BY id DESC LIMIT 1;")
-        return cursor.fetchone()
+        cursor.execute("SELECT timestamp, id FROM blocks ORDER BY id DESC LIMIT 1;")
+        res = cursor.fetchone()
+        return {
+                    'timestamp': res[0],
+                    'id': res[1]
+                }
 
-
-def get_next_block(last_block: int):
-    with sqlite3.connect(DB_ALFIS_PATH) as conn:
+def save_block_bookmark(block):
+    with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
-        cursor.execute(f"SELECT timestamp, id FROM blocks WHERE id > {last_block} LIMIT 1")
-        return cursor.fetchone()
+        cursor.execute('''INSERT INTO delayed_blocks (num, timestamp) VALUES (?, ?)''', (block['id'], block['timestamp']))
+        conn.commit()
 
+def get_block_bookmark():
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''SELECT num, timestamp FROM delayed_bloks ORDER BY num DESC LIMIT 1''')
+        return {
+                    'id': cursor.fetchone()[0],
+                    'timestamp': cursor.fetchone()[1]
+                }
+        
 def save_chat_id(chat_id: int):
     '''
-    Save last block on the bd
+    Save chat id 
     '''
     with sqlite3.connect(DB_FILE) as conn:
 
         cursor = conn.cursor()
 
-        cursor.execute(f'''CREATE TABLE IF NOT EXISTS {DB_TABLE} (
+        cursor.execute(f'''CREATE TABLE IF NOT EXISTS chats (
                             id INTEGER PRIMARY KEY,
-                            {DB_COL} INTEGER,
-                            UNIQUE ({DB_COL})
+                            chat_id INTEGER,
+                            UNIQUE (chat_id)
+                        )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS delayed_blocks (
+                            id INTEGER PRIMARY KEY,
+                            num INTEGER,
+                            timestamp INTEGER,
+                            UNIQUE (num)
                         )''')
         try:
-            cursor.execute(f'INSERT INTO {DB_TABLE} ({DB_COL}) VALUES (?)', (chat_id,))
+            cursor.execute(f'INSERT INTO chats (chat_id) VALUES (?)', (chat_id,))
         except sqlite3.IntegrityError:
             print('оооо бля хуйню делаешь!')
 
@@ -37,7 +56,7 @@ def save_chat_id(chat_id: int):
 def get_chat_ids():
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
-        cursor.execute(f'SELECT {DB_COL} FROM {DB_TABLE}')
+        cursor.execute(f'SELECT chat_id FROM chats')
         for row in cursor.fetchall():
             yield row[0]
 

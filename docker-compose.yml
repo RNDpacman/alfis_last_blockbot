@@ -32,5 +32,6 @@ services:
       - ALFIS_DB_PATH=/db
       - SCHEDULE_SECONDS=60 #default 60
 #      - ALFIS_DB_FILE="blockchain.db"
+#      - ALERT_SECONDS=180
 
 
