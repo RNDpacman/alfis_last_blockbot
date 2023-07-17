@@ -15,7 +15,10 @@ def get_last_block():
 def save_block_bookmark(block):
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
-        cursor.execute('''INSERT INTO delayed_blocks (num, timestamp) VALUES (?, ?)''', (block['id'], block['timestamp']))
+        try:
+            cursor.execute('''INSERT INTO delayed_blocks (num, timestamp) VALUES (?, ?)''', (block['id'], block['timestamp']))
+        except sqlite3.IntegrityError:
+            print('Duplicate bookmark block')    
         conn.commit()
 
 def get_block_bookmark():
