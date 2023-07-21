@@ -1,6 +1,20 @@
 import sqlite3
 from config import DB_FILE, DB_ALFIS_PATH, ALERT_TIME, TEXT_ALERT_MSG
 
+
+def create_db():
+    cursor.execute(f'''CREATE TABLE IF NOT EXISTS chats (
+                            id INTEGER PRIMARY KEY,
+                            chat_id INTEGER,
+                            UNIQUE (chat_id)
+                        )''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS delayed_blocks (
+                            id INTEGER PRIMARY KEY,
+                            num INTEGER,
+                            timestamp INTEGER,
+                            UNIQUE (num)
+                        )''')
+
 def get_last_block():
     with sqlite3.connect(DB_ALFIS_PATH) as conn:
         cursor = conn.cursor()
@@ -36,18 +50,7 @@ def save_chat_id(chat_id: int):
     with sqlite3.connect(DB_FILE) as conn:
 
         cursor = conn.cursor()
-
-        cursor.execute(f'''CREATE TABLE IF NOT EXISTS chats (
-                            id INTEGER PRIMARY KEY,
-                            chat_id INTEGER,
-                            UNIQUE (chat_id)
-                        )''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS delayed_blocks (
-                            id INTEGER PRIMARY KEY,
-                            num INTEGER,
-                            timestamp INTEGER,
-                            UNIQUE (num)
-                        )''')
+        
         try:
             cursor.execute(f'INSERT INTO chats (chat_id) VALUES (?)', (chat_id,))
         except sqlite3.IntegrityError:

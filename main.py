@@ -2,7 +2,14 @@ import logging
 import time
 from aiogram import Bot, Dispatcher, executor, types
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from utils import get_last_block, get_chat_ids, save_chat_id, get_block_bookmark, save_block_bookmark
+from utils import ( get_last_block,
+                    get_chat_ids, 
+                    save_chat_id, 
+                    get_block_bookmark, 
+                    save_block_bookmark, 
+                    create_db, 
+                    )
+                  
 from config import CHECK_SECONDS, TEXT_MSG, API_TOKEN, ALERT_TIME, ALERT_SECONDS, TEXT_ALERT_MSG, TEXT_5_MSG
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -59,10 +66,11 @@ check_block_sched.add_job(check_last_block, "interval", seconds=CHECK_SECONDS, a
 alert_block_sched.add_job(alert_block, "interval", seconds=ALERT_SECONDS, args=(bot,))   
 
 if not check_block_sched.running:
-    save_block_bookmark({'id': False, 'timestamp': False}) # что бы не ругался на не созданную таблицу при вызове get_block_bookmark()
+    save_block_bookmark({'id': False, 'timestamp': False})
     check_block_sched.start()
     
   
 if __name__ == '__main__':
+    create_db()    
     executor.start_polling(dp, skip_updates=True)
    
