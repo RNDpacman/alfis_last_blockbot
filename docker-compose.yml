@@ -7,6 +7,8 @@ networks:
 volumes:
   alfis_data:
     name: alfis_data
+  alfis_bot:
+    name: alfis_bot
 
 services:
   alfis:
@@ -24,6 +26,7 @@ services:
     container_name: alfisdnsbot
     volumes:
       - alfis_data:/db
+      - alfis_bot:/alfis
     networks:
       - lb-net
     restart: unless-stopped
