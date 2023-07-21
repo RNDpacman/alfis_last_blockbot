@@ -59,7 +59,9 @@ check_block_sched.add_job(check_last_block, "interval", seconds=CHECK_SECONDS, a
 alert_block_sched.add_job(alert_block, "interval", seconds=ALERT_SECONDS, args=(bot,))   
 
 if not check_block_sched.running:
+    save_block_bookmark({'id': False, 'timestamp': False}) # что бы не ругался на не созданную таблицу при вызове get_block_bookmark()
     check_block_sched.start()
+    
   
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

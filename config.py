@@ -15,6 +15,6 @@ TEXT_5_MSG = "Block #{} multiple of 5"
 TEXT_ALERT_MSG = """Внимание!  @Revertron, @R4SAS и @dradanudanay
 После блока с данными/подписями #{} более {} минут не приходят блоки с подписями!"""
 
-DB_FILE = 'chat_ids.db'
+DB_FILE = 'support.db'
 
 ALERT_TIME = 600
