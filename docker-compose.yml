@@ -29,9 +29,9 @@ services:
     restart: unless-stopped
     environment:
       - BOT_API_TOKEN=${BOT_API_TOKEN}
-      - ALFIS_DB_PATH=/db
-      - SCHEDULE_SECONDS=60 #default 60
-#      - ALFIS_DB_FILE="blockchain.db"
-#      - ALERT_SECONDS=180
+      - ALFIS_DB_PATH=${ALFIS_DB_PATH}
+      - SCHEDULE_SECONDS=${SCHEDULE_SECONDS}
+      - ALFIS_DB_FILE=${ALFIS_DB_FILE}
+      - ALERT_SECONDS=${ALERT_SECONDS}
 
 
