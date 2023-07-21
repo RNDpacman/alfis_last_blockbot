@@ -3,18 +3,20 @@ from config import DB_FILE, DB_ALFIS_PATH, ALERT_TIME, TEXT_ALERT_MSG
 
 
 def create_db():
-    cursor.execute(f'''CREATE TABLE IF NOT EXISTS chats (
-                            id INTEGER PRIMARY KEY,
-                            chat_id INTEGER,
-                            UNIQUE (chat_id)
-                        )''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS delayed_blocks (
-                            id INTEGER PRIMARY KEY,
-                            num INTEGER,
-                            timestamp INTEGER,
-                            UNIQUE (num)
-                        )''')
-
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute(f'''CREATE TABLE IF NOT EXISTS chats (
+                                id INTEGER PRIMARY KEY,
+                                chat_id INTEGER,
+                                UNIQUE (chat_id)
+                            )''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS delayed_blocks (
+                                id INTEGER PRIMARY KEY,
+                                num INTEGER,
+                                timestamp INTEGER,
+                                UNIQUE (num)
+                            )''')
+        
 def get_last_block():
     with sqlite3.connect(DB_ALFIS_PATH) as conn:
         cursor = conn.cursor()
@@ -37,10 +39,11 @@ def save_block_bookmark(block):
 def get_block_bookmark():
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
-        cursor.execute('''SELECT num, timestamp FROM delayed_bloks ORDER BY num DESC LIMIT 1''')
+        cursor.execute('''SELECT num, timestamp FROM delayed_blocks ORDER BY num DESC LIMIT 1''')
+        res = cursor.fetchone()
         return {
-                    'id': cursor.fetchone()[0],
-                    'timestamp': cursor.fetchone()[1]
+                    'id': res[0],
+                    'timestamp': res[1]
                 }
         
 def save_chat_id(chat_id: int):

@@ -65,12 +65,12 @@ async def alert_block(bot: Bot):
 check_block_sched.add_job(check_last_block, "interval", seconds=CHECK_SECONDS, args=(bot,))
 alert_block_sched.add_job(alert_block, "interval", seconds=ALERT_SECONDS, args=(bot,))   
 
-if not check_block_sched.running:
-    save_block_bookmark({'id': False, 'timestamp': False})
+if not check_block_sched.running:    
     check_block_sched.start()
     
   
 if __name__ == '__main__':
-    create_db()    
+    create_db()
+    save_block_bookmark(get_last_block())
     executor.start_polling(dp, skip_updates=True)
    
