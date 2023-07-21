@@ -1,2 +1,3 @@
 blockchain.db
 __pycache__
+.env
