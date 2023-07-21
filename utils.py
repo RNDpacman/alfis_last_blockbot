@@ -1,7 +1,6 @@
 import sqlite3
 from config import DB_FILE, DB_ALFIS_PATH, ALERT_TIME, TEXT_ALERT_MSG
 
-
 def get_last_block():
     with sqlite3.connect(DB_ALFIS_PATH) as conn:
         cursor = conn.cursor()

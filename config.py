@@ -10,6 +10,8 @@ ALERT_SECONDS = int(os.environ.get('ALERT_SECONDS', 180))
 
 TEXT_MSG = "Last Alfis Block is: "
 
+TEXT_5_MSG = "Block #{} multiple of 5"
+
 TEXT_ALERT_MSG = """Внимание!  @Revertron, @R4SAS и @dradanudanay
 После блока с данными/подписями #{} более {} минут не приходят блоки с подписями!"""
 

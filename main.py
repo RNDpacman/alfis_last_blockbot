@@ -3,7 +3,7 @@ import time
 from aiogram import Bot, Dispatcher, executor, types
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from utils import get_last_block, get_chat_ids, save_chat_id, get_block_bookmark, save_block_bookmark
-from config import CHECK_SECONDS, TEXT_MSG, API_TOKEN, ALERT_TIME, ALERT_SECONDS, TEXT_ALERT_MSG
+from config import CHECK_SECONDS, TEXT_MSG, API_TOKEN, ALERT_TIME, ALERT_SECONDS, TEXT_ALERT_MSG, TEXT_5_MSG
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
@@ -32,11 +32,19 @@ async def check_last_block(bot: Bot):
 
     last_block = get_last_block()
     
+    if last_block['id'] % 5 == 0 and last_block['id'] != get_block_bookmark()['id']:
+        save_block_bookmark(last_block)
+        for chat_id in get_chat_ids():
+            await bot.send_message(text=TEXT_5_MSG.format(last_block['id']), chat_id=chat_id)
+            logging.info(f'schedule: Chat_ID: {chat_id}, block: {last_block["id"]} % 5 == 0')
+        
+    
     if last_block['id'] % 5 and int(time.time()) - last_block['timestamp'] > ALERT_TIME:
         save_block_bookmark(last_block)
         if not alert_block_sched.running:
-            alert_block_sched.start()        
+            alert_block_sched.start()    
     else:
+        
         if alert_block_sched.running:
             alert_block_sched.shutdown()
 
@@ -45,7 +53,7 @@ async def alert_block(bot: Bot):
     last_block = get_block_bookmark()
     for chat_id in get_chat_ids():
         await bot.send_message(text=TEXT_ALERT_MSG.format(last_block['id'], ALERT_TIME/60), chat_id=chat_id)
-        logging.info(f'schedule: Chat_ID: {chat_id}, ALERT Next block after this {last_block["id"]} delayed')
+        logging.info(f'schedule: Chat_ID: {chat_id}, ALERT Next block after block {last_block["id"]} delayed')
     
 check_block_sched.add_job(check_last_block, "interval", seconds=CHECK_SECONDS, args=(bot,))
 alert_block_sched.add_job(alert_block, "interval", seconds=ALERT_SECONDS, args=(bot,))   
