@@ -6,7 +6,7 @@ COPY ["main.py", "utils.py", "config.py", "./"]
 
 RUN pip install aiogram apscheduler
 
-ENV ALFIS_DB_PATH="."
+ENV ALFIS_DB_PATH="/db"
 
 ENV ALFIS_DB_FILE="blockchain.db"
 
