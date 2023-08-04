@@ -3,13 +3,14 @@ import time
 from aiogram import Bot, Dispatcher, executor, types
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from utils import ( get_last_block,
-                    get_chat_ids, 
-                    save_chat_id, 
-                    get_block_bookmark, 
-                    save_block_bookmark, 
-                    create_db, 
+                    get_chat_ids,
+                    save_chat_id,
+                    get_block_bookmark,
+                    save_block_bookmark,
+                    create_db,
+                    get_human_time,
                     )
-                  
+
 from config import CHECK_SECONDS, TEXT_MSG, API_TOKEN, ALERT_TIME, ALERT_SECONDS, TEXT_ALERT_MSG, TEXT_5_MSG
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -23,9 +24,9 @@ alert_block_sched = AsyncIOScheduler()
 
 @dp.message_handler(commands=['start', 'get'])
 async def send_welcome(message: types.Message):
-    
+
     last_block = get_last_block()
-    
+
     logging.info(f'command: [start, get], user: {message.from_user.id}, chat_id: {message.chat.id}, last_block: {last_block["id"]}')
     save_chat_id(message.chat.id)
     await message.reply(f'{TEXT_MSG}{last_block["id"]}')
@@ -38,39 +39,46 @@ async def send_welcome(message: types.Message):
 async def check_last_block(bot: Bot):
 
     last_block = get_last_block()
-    
+    last_block_h_time = get_human_time(last_block['timestamp'])
+
+    logging.info(f'check_last_block: last_block_id: {last_block["id"]} last_block_time: {last_block_h_time}')
+
     if last_block['id'] % 5 == 0 and last_block['id'] != get_block_bookmark()['id']:
         save_block_bookmark(last_block)
         for chat_id in get_chat_ids():
             await bot.send_message(text=TEXT_5_MSG.format(last_block['id']), chat_id=chat_id)
-            logging.info(f'schedule: Chat_ID: {chat_id}, block: {last_block["id"]} % 5 == 0')
-        
-    
+            logging.info(f'check_last_block send_msg: Chat_ID: {chat_id}, block: {last_block["id"]} % 5 == 0')
+
+
     if last_block['id'] % 5 and int(time.time()) - last_block['timestamp'] > ALERT_TIME:
         save_block_bookmark(last_block)
         if not alert_block_sched.running:
-            alert_block_sched.start()    
+            await alert_block(bot)
+            alert_block_sched.start()
+            logging.info(f'check_last_block run alert: block: {last_block["id"]} time_block: {last_block_h_time}')
     else:
-        
         if alert_block_sched.running:
             alert_block_sched.shutdown()
+            logging.info(f'check_last_block shutdown alert: block: {last_block["id"]} time_block: {last_block_h_time}')
 
-  
 async def alert_block(bot: Bot):
     last_block = get_block_bookmark()
+    last_block_h_time = get_human_time(last_block['timestamp'])
+    
+    logging.info(f'alert_block: block: {last_block["id"]} time_block: {last_block_h_time}')
     for chat_id in get_chat_ids():
         await bot.send_message(text=TEXT_ALERT_MSG.format(last_block['id'], ALERT_TIME/60), chat_id=chat_id)
-        logging.info(f'schedule: Chat_ID: {chat_id}, ALERT Next block after block {last_block["id"]} delayed')
-    
-check_block_sched.add_job(check_last_block, "interval", seconds=CHECK_SECONDS, args=(bot,))
-alert_block_sched.add_job(alert_block, "interval", seconds=ALERT_SECONDS, args=(bot,))   
+        logging.info(f'alert_block send_msg: Chat_ID: {chat_id}')
 
-if not check_block_sched.running:    
+check_block_sched.add_job(check_last_block, "interval", seconds=CHECK_SECONDS, args=(bot,))
+alert_block_sched.add_job(alert_block, "interval", seconds=ALERT_SECONDS, args=(bot,))
+
+if not check_block_sched.running:
     check_block_sched.start()
-    
-  
+
+
 if __name__ == '__main__':
     create_db()
     save_block_bookmark(get_last_block())
     executor.start_polling(dp, skip_updates=True)
-   
+

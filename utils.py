@@ -1,6 +1,6 @@
 import sqlite3
 from config import DB_FILE, DB_ALFIS_PATH, ALERT_TIME, TEXT_ALERT_MSG
-
+import datetime
 
 def create_db():
     with sqlite3.connect(DB_FILE) as conn:
@@ -68,3 +68,6 @@ def get_chat_ids():
         for row in cursor.fetchall():
             yield row[0]
 
+def get_human_time(timestamp):
+    dt = datetime.datetime.fromtimestamp(timestamp)
+    return dt.strftime('%H:%M:%S')
