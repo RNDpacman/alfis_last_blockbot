@@ -18,6 +18,8 @@ services:
       - alfis_data:/storage
     networks:
       - lb-net
+    environment:
+      - TZ=${TZ}
     restart: unless-stopped
     stop_grace_period: 10s
 
@@ -36,5 +38,6 @@ services:
       - SCHEDULE_SECONDS=${SCHEDULE_SECONDS}
       - ALFIS_DB_FILE=${ALFIS_DB_FILE}
       - ALERT_SECONDS=${ALERT_SECONDS}
+      - TZ=${TZ}
 
 
